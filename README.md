@@ -22,6 +22,11 @@ Designed and implemented a secure network architecture featuring:
 - Cisco ASA
 - GNS3 (optional, if used)
 - Networking protocols: OSPF, AAA, IPSec
+ 
+ ## 🖼️ Network Topology
+
+![Topology Diagram](https://raw.githubusercontent.com/rawan26281/Network_Security_Project/main/topology.png)
+
 
 ## 👤 Author
 Rawan Mostafa  
