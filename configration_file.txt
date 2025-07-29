@@ -1,0 +1,567 @@
+basic conf for router
+basic conf for sw
+hostname sw1
+ip domain-name NTI.com
+banner motd "warning only admins allowed"
+enable secret admin1234
+username admin password admin1234
+crypto key generate rsa 
+1024
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exit
+-----------
+- vlans
+    
+    ```
+    vlan 50
+    	name blue
+    	exit
+    vlan 60
+    	name red
+    	exit
+    vlan 70
+    	name green
+    	exit
+    vlan 80
+    	name management
+    	exit
+    	
+    	int f0/1
+    		switchport mode access
+    		switchport access vlan 50
+    	int f0/10
+    		switchport mode access
+    		switchport access vlan 60
+    	int f0/20
+    		switchport mode access
+    		switchport access vlan 70
+    	int g0/2
+    		switchport mode trunk
+    		switchport trunk allowed vlan 50,60,70,80
+    
+    SVI NETWORK
+    sw1
+    int vlan 80
+     ip add 172.16.1.137 255.255.255.248
+     no sh
+    sw2
+    int vlan 80
+     ip add 172.16.1.138 255.255.255.248
+     no sh
+    sw3
+    int vlan 80
+     ip add 172.16.1.139 255.255.255.248
+     no sh
+     
+     router conf
+     
+     int g0/0/0
+    	 no sh
+     int g0/0/0.50
+    	 encapsulation dot1Q 50
+    	 ip address 172.16.1.113 255.255.255.248
+    	 exit
+    	 
+      int g0/0/0.60
+    	 encapsulation dot1Q 60
+    	 ip address 172.16.1.121 255.255.255.248
+    	 exit
+    	 
+    	 int g0/0/0.70
+    	 encapsulation dot1Q 70
+    	 ip address 172.16.1.129 255.255.255.248
+    	 exit
+    	 
+    	 int g0/0/0.80
+    	 encapsulation dot1Q 80
+    	 ip address 172.16.1.141 255.255.255.248
+    	 exit
+    	 
+    ip dhcp pool vlan50
+     network 172.16.1.112 255.255.255.248
+     default-router 172.16.1.113
+     dns-server 8.8.8.8
+     
+     ip dhcp pool vlan60
+     network 172.16.1.120 255.255.255.248
+     default-router 172.16.1.121
+     dns-server 8.8.8.8
+     
+     ip dhcp pool vlan70
+     network 172.16.1.128 255.255.255.248
+     default-router 172.16.1.129
+     dns-server 8.8.8.8
+    ```
+    
+    vlans r5
+    
+    ```
+    vlan 10
+    	name blueblue
+    	exit
+    vlan 20
+    	name priple
+    	exit
+    vlan 30
+    	name orange
+    	exit
+    vlan 40
+    	name pink
+    	exit
+    vlan 50
+    	name management
+    	exit
+    	
+    	int f0/1
+    		switchport mode access
+    		switchport access vlan 10
+    	int f0/5
+    		switchport mode access
+    		switchport access vlan 20
+    	int f0/2
+    		switchport mode access
+    		switchport access vlan 30
+    	int f0/3
+    		switchport mode access
+    		switchport access vlan 40
+    
+    	int g0/1
+    		switchport mode trunk
+    		switchport trunk allowed vlan 10,20,30,40,50
+-------------------------------------------------
+ SVI NETWORK
+    sw1
+    int vlan 50
+     ip add 172.16.1.105 255.255.255.248
+     no sh
+    
+     
+     router conf
+     
+     int g0/0/0
+    	 no sh
+     int g0/0/0.10
+    	 encapsulation dot1Q 10
+    	 ip address 172.16.1.65 255.255.255.240
+    	 exit
+    	 
+      int g0/0/0.20
+    	 encapsulation dot1Q 20
+    	 ip address 172.16.1.81 255.255.255.248
+    	 exit
+    	 
+    	 int g0/0/0.30
+    	 encapsulation dot1Q 30
+    	 ip address 172.16.1.89 255.255.255.248
+    	 exit
+    	 
+    	 int g0/0/0.40
+    	 encapsulation dot1Q 40
+    	 ip address 172.16.1.97 255.255.255.248
+    	 exit
+    	 int g0/0/0.50
+    	 encapsulation dot1Q 50
+    	 ip address 172.16.1.105 255.255.255.248
+    	 exit
+    	 
+    ip dhcp pool vlan50
+     network 172.16.1.112 255.255.255.248
+     default-router 172.16.1.113
+     dns-server 8.8.8.8
+     
+     ip dhcp pool vlan60
+     network 172.16.1.120 255.255.255.248
+     default-router 172.16.1.121
+     dns-server 8.8.8.8
+     
+     ip dhcp pool vlan70
+     network 172.16.1.128 255.255.255.248
+     default-router 172.16.1.129
+     dns-server 8.8.8.8
+    ```
+------------
+- ospf auth
+globally
+ip ospf message-digest-key 1 md5 cisco1234
+area 0 authentication message-digest
+​
+per interface
+router ospf 1
+area 0 authentication message-digest
+ip ospf message-digest-key 1 md5 cisco1234
+ip ospf authentication message-digest 
+​
+ospf sha in globa
+key chain SHA256
+	key 1
+	key-string ospfSHA256
+	cryptographic-algorithm hmac-sha-256 
+	exit
+
+interface 
+	ip ospf authentication key-chain SHA256
+-----------
+R7 ACL
+ipv6 access-list block_pc2
+	deny icmp 2001::2/64 2001:DB8:3::1/64
+	permit ipv6 any any 
+	
+interface
+ ipv6 traffic-filter block_pc2 in
+​
+views
+
+aaa new-model
+
+en view
+parser view show-run
+sercet admin1234
+commands exec include show run
+exit
+
+parser view show-ip
+sercet admin1234
+commands exec include show ip
+exit
+
+parser view show-ip-run superview
+sercet admin1234
+commands exec include show run
+exit
+​-----------------------------------------
+zone policy firewall
+zone security INSIDE
+zone security OUTSIDE
+zone security DMZONE
+
+class-map type inspect match-any INSIDE_PROTOCOLS
+	match protocol ip
+class-map type inspect match-any DMZ
+	match protocol http
+	match protocol https
+	match protocol smtp
+	match protocol imap
+policy-map type inspect INSIDE_TO_OUTSIDE
+	class type inspect INSIDE_PROTOCOLS
+	inspect
+	exit
+	exit
+
+policy-map type inspect OUTSIDE_TO_DMZ
+	class type inspect DMZ
+	inspect
+	exit
+	exit
+```
+zone-pair security INSIDE_TO_OUTSIDE source INSIDE destination OUTSIDE
+	service-policy type inspect INSIDE_TO_OUTSIDE
+	
+zone-pair security OUTSIDE_TO_DMZ source OUTSIDE destination DMZONE
+	service-policy type inspect OUTSIDE_TO_DMZ
+
+int g0/0/0
+	zone-member security INSIDE
+int g0/0/1
+	zone-member security INSIDE
+int s0/1/0
+	zone-member security OUTSIDE
+	
+```
+--------------------------------------------
+- R9 NTP , syslog ,tacacs+
+    
+    ### ntp
+    
+    ```
+    
+    conf t
+    ntp server 172.16.1.146
+    ntp update-calendar
+    ntp authenticate
+    ntp trusted-key 1
+    ntp authentication-key 1 md5 admin1234
+    ```
+    
+    ### syslog
+    
+    ```
+    logging host 172.16.1.82
+    service timestamps log datetime msec 
+    
+    ```
+    
+    ### AAA TACACS
+    
+    ```
+    tacacs-server host 172.16.1.146
+    tacacs-server key tacacspa55
+    
+    aaa new-model
+    aaa authentication login default group tacacs+ local
+    
+    line console 0
+    login authentication default
+    end
+    
+    ---------------
+    on server
+    username:admin100,pass:123456789
+    ```
+    
+    ### AAA Rudias
+    
+    ```
+    
+    aaa new-model
+    radius server SERVER-R
+    address ipv4 172.16.1.82 auth-port 1645
+    key radiuspa55
+    exit
+    aaa authentication login default group radius local
+    line console 0
+    login authentication default
+    end
+    
+    aaa authentication login SSH_LOG group radius local
+    line console 0
+    login authentication SSH_LOG
+    end
+    
+    ```
+--------------------------------------  
+- port security
+    - mac table mitigation
+        
+        ```
+        int range f0 / 2-24
+        	sh
+        	
+        int range f0/ 
+        	sw mode access
+        	sw port-security
+        	sw port-security maximum 2
+        	sw port-security mac-address sticky
+        	sw port-security violation restrict 
+        
+        ```
+vlan mitigate
+# non-trunk port
+sw mode access
+
+# trunk port
+sw nonegotiate
+sw trunk native vlan 100
+​
+ dhcp and arp spoofing mitig
+ip dhcp snooping
+ip dhcp snooping vlan 50,60,70
+no ip dhcp snooping information option   <-------------
+ip arp inspection vlan 50,60,70
+ip arp inspection validate src-mac
+
+# trust
+int f0/
+	ip snooping trust
+	ip arp inspection trust
+	ip verify source 
+	exit
+	
+# untrust
+int f0/
+	ip dhcp snooping limit rate 6 
+	
+end
+R8
+ip access-list extended OUT-TO-IN
+ permit ospf any any
+ permit icmp any any echo-reply
+ permit icmp any any unreachable
+ deny icmp any any
+ deny ip 10.0.0.0 0.255.255.255 any
+ deny ip 172.16.1.16 0.0.0.7 any
+ deny ip 127.0.0.0 0.255.255.255 any
+ deny ip host 255.255.255.255 any
+ deny ip host 0.0.0.0 any
+ deny ip 224.0.0.0 15.255.255.255 any
+ deny ip 169.254.0.0 0.0.255.255 any
+ deny ip 192.168.0.0 0.0.255.255 any
+ permit ip any any
+ 
+ 
+ ip access-list extended LAN-INTERNET-FILTER
+ permit ip host 172.16.1.18 any
+ permit tcp host 172.16.1.20 any eq www
+ permit tcp host 172.16.1.20 any eq 443
+ permit tcp host 172.16.1.20 any eq smtp
+ permit tcp host 172.16.1.20 any eq pop3
+ permit tcp host 172.16.1.20 any eq 143
+ deny ip host 172.16.1.19 any
+​
+802.1x
+aaa new-model
+radius server NETSEC
+address ipv4 172.16.1.82 auth-port 1812 
+key RADIUS_pa55
+
+aaa authentication dot1x default group radius
+dot1x system-auth-control
+
+interface F0/1
+description Access Port
+ switchport mode access
+authentication port-control auto
+dot1x pae authenticator	
+IPS
+config t
+license boot level securityk9 
+
+do wr
+reload
+mkdir ipsdir
+config t
+ip ips config location flash:ipsdir
+ip ips name iosips
+ip ips notify log
+service timestamps log datetime msec
+logging host 172.16.1.3
+ip ips signature-category
+category all
+retired true
+exit
+category ios_ips basic
+retired false
+exit
+exit
+interface g0/0/1
+ip ips iosips out
+exit
+ip ips signature-definition
+signature 2004 0
+status
+retired false
+enabled true
+exit
+engine
+event-action produce-alert
+event-action deny-packet-inline
+exit
+exit
+exit
+​
+monitor session 1 source interface fastEthernet 0/1 both
+monitor session 1 source interface fastEthernet 0/11 both
+monitor session 1 destination interface fastEthernet 0/2
+​
+VPN
+phase 1 ISAKMP
+# create access list for isakmp
+crypto isakmp enable
+ip access-list extended INBOUND102           <-----
+permit ip   172.16.1.16 0.0.0.15 172.16.1.112 0.0.0.7
+permit ip   172.16.1.16 0.0.0.15 172.16.1.112 0.0.0.7
+permit ip   172.16.1.112 0.0.0.7 172.16.1.16 0.0.0.15
+exit
+
+# create ISAKMP POLICEY 
+
+crypto isakmp policy 10
+authentication pre-share
+hash sha
+group 5
+encryption aes 256
+lifetime 3600
+end
+
+# create Pre-shared key
+
+crypto isakmp key cisco12345 address 172.16.1.162       <-----
+
+# sh isakmp sh
+phase2 IPSEC
+crypto ipsec transform-set R1_R2 esp-aes esp-sha-hmac
+
+
+​
+crypto map
+	crypto map R1-R2-MAP 10 ipsec-isakmp
+		match address INBOUND102            <----
+		set transform-set R1_R2
+		set peer 172.16.1.162               <----
+		set pfs group5
+		set security-association lifetime seconds 900
+		exit
+		
+	int s0/0/0
+	crypto map R1-R2-MAP end
+	
+​
+conf radius on r8 
+ASA
+# interface
+
+int g1/1
+nameif OUTSIDE
+ip add 200.1.1.2 255.255.225.128
+security-level 0
+no sh
+
+int g1/2
+nameif DMZ
+ip add 192.168.3.1 255.255.225.128
+security-level 50
+no sh
+
+int g1/3
+nameif INSIDE
+ip add 192.168.1.1 255.255.225.128
+security-level 100
+no sh
+
+# routing
+
+route OUTSIDE 0.0.0.0 0.0.0.0 200.1.1.1
+
+# Remote Access Services
+
+username admin100 passwd admin1234
+aaa authentication ssh console LOCAL
+crypto key generate rsa modulus 1024
+ssh 192.168.1.3 255.255.225.128 INSIDE
+ssh version 2
+ssh timeout 2
+# NTP service
+
+ntp authentication 
+ntp trusted-key 1
+ntp authentication-key 1 md5 admin1234
+ntp server 172.16.1.146
+
+# DHCP 
+dhcpd address 192.168.1.2 - 192.168.1.10 INSIDE
+dhcpd dns 8.8.8.8
+dhcpd option 3 ip 192.168.1.1   <---- default getway
+dhcpd enable INSIDE
+
+# NAT from inside to outside
+object network PUBLIC
+subnet 192.168.1.0 255.255.255.128
+nat (INSIDE,OUTSIDE) dynamic interface
+exit
+
+# NAT from outside to dmz
+object network DMZ-SERVER
+	host 192.168.3.2
+	nat (DMZ,OUTSIDE) static 200.1.1.9
+	exit
+	
+access-list out-to-dmz extended permit tcp any host 192.168.3.2 eq www
+access-list out-to-dmz extended permit tcp any host 192.168.3.2 eq 443
+access-list out-to-dmz extended permit tcp any host 192.168.3.2 eq ftp
+access-list out-to-dmz extended permit tcp any host 192.168.3.2 eq smtp
+access-list out-to-dmz extended permit tcp any host 192.168.3.2 eq pop3
+access-list out-to-dmz extended permit tcp any host 192.168.3.2 eq 143
+access-list out-to-dmz extended permit icmp any host 192.168.3.2
+access-group out-to-dmz in interface OUTSIDE
