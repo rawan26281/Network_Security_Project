@@ -25,7 +25,7 @@ Designed and implemented a secure network architecture featuring:
  
  ## 🖼️ Network Topology
 
-![Topology Diagram](https://raw.githubusercontent.com/rawan26281/Network_Security_Project/main/topology.png)
+![Topology Diagram](https://raw.githubusercontent.com/rawan26281/Network_Security_Project/main/NETWORK_SECURITY_PROJECT.png)
 
 
 ## 👤 Author
